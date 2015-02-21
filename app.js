@@ -1,4 +1,7 @@
 var express = require('express');
+var session = require('express-session');
+var flash = require('connect-flash');
+var passport = require('./lib/auth');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
@@ -9,6 +12,7 @@ var settingLoader = require('./lib/setting-loader');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
+var auth = require('./routes/auth');
 
 var app = express();
 
@@ -21,15 +25,31 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
+app.use(cookieParser('secretString'));
+app.use(session({cookie: { maxAge: 60000 }}));
+app.use(flash());
 app.use(require('less-middleware')(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/bc',  express.static(__dirname + '/bower_components'));
-
 app.use(settingLoader());
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use(function(req, res, next){
+    res.locals.flash = {};
+    res.locals.flash.error = req.flash('error');
+    next();
+});
+
+app.post('/auth/login', passport.authenticate('local', {
+    successRedirect: '/',
+    failureRedirect: '/auth/login',
+    failureFlash: true
+}));
 
 app.use('/', routes);
 app.use('/users', users);
+app.use('/auth', auth);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
