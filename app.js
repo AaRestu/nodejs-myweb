@@ -5,6 +5,8 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
+var settingLoader = require('./lib/setting-loader');
+
 var routes = require('./routes/index');
 var users = require('./routes/users');
 
@@ -23,6 +25,8 @@ app.use(cookieParser());
 app.use(require('less-middleware')(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/bc',  express.static(__dirname + '/bower_components'));
+
+app.use(settingLoader());
 
 app.use('/', routes);
 app.use('/users', users);

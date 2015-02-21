@@ -1,5 +1,9 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
+  if(errors)
+    ul
+      each error in errors.errors
+        li= error.message
+  h1= websettings.SITE_TITLE
+  p Welcome to #{websettings.SITE_TITLE}
